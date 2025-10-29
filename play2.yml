@@ -1,0 +1,55 @@
+---
+- name: Setup HTTPS Nginx Web Server
+  hosts: webservers
+  become: yes
+
+  vars:
+    ssl_cert_path: /etc/nginx/ssl
+    ssl_cert_file: "{{ ssl_cert_path }}/server.crt"
+    ssl_key_file: "{{ ssl_cert_path }}/server.key"
+
+  tasks:
+    - name: Install Nginx
+      yum:
+        name: nginx
+        state: present
+
+    - name: Create SSL directory
+      file:
+        path: "{{ ssl_cert_path }}"
+        state: directory
+        mode: '0755'
+
+    - name: Generate SSL Private Key
+      command: openssl genrsa -out {{ ssl_key_file }} 2048
+      args:
+        creates: "{{ ssl_key_file }}"
+
+    - name: Generate SSL Certificate
+      command: >
+        openssl req -new -x509 -key {{ ssl_key_file }}
+        -out {{ ssl_cert_file }} -days 365
+        -subj "/CN=example.com"
+      args:
+        creates: "{{ ssl_cert_file }}"
+
+    - name: Configure HTTPS in Nginx
+      copy:
+        dest: /etc/nginx/conf.d/ssl.conf
+        content: |
+          server {
+            listen 443 ssl;
+            server_name example.com;
+
+            ssl_certificate {{ ssl_cert_file }};
+            ssl_certificate_key {{ ssl_key_file }};
+
+            root /usr/share/nginx/html;
+            index index.html;
+          }
+
+    - name: Start and enable Nginx
+      service:
+        name: nginx
+        state: restarted
+        enabled: yes
