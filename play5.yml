@@ -1,0 +1,16 @@
+---
+- name: Install and start Apache web server
+  hosts: webservers       # Target group of hosts (from inventory)
+  become: yes             # Run tasks with sudo privileges
+  tasks:                  # List of tasks to perform
+
+    - name: Install Apache package
+      yum:
+        name: httpd
+        state: present
+
+    - name: Ensure Apache service is running
+      service:
+        name: httpd
+        state: started
+        enabled: yes
