@@ -11,3 +11,6 @@ echo "<html><h1><center>" > /var/www/html/index.html
 echo "I am in the server $(hostname)" >> /var/www/html/index.html
 echo "</center></h1></html>" >> /var/www/html/index.html
 # End
+kmdkewd
+hkj
+
